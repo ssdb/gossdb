@@ -31,9 +31,11 @@ func main() {
 	val, err = db.Get("a")
 	fmt.Printf("%s\n", val)
 
+	fmt.Printf("----\n");
+
 	db.Do("zset", "z", "a", 3)
 	db.Do("multi_zset", "z", "b", -2, "c", 5, "d", 3)
-	resp, err := db.Do("zrange", "z", 0, 10)
+	resp, err := db.Do("zrscan", "z", "", "", "", 10)
 	if err != nil {
 		os.Exit(1)
 	}
