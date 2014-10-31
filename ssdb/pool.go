@@ -3,8 +3,8 @@ package ssdb
 import (
 	"net"
 	"runtime"
-	"time"
 	"strconv"
+	"time"
 )
 
 type Pool struct {
@@ -47,7 +47,7 @@ func NewPool(cfg Config) (*Pool, error) {
 
 	for i := 0; i < cfg.MaxConn; i++ {
 
-		cn, err := dialTimeout(pl.ctype, pl.clink, pl.ctimeout)
+		cn, err := dialTimeout(pl.ctype, pl.clink)
 		if err != nil {
 			return pl, err
 		}
@@ -57,7 +57,7 @@ func NewPool(cfg Config) (*Pool, error) {
 	return pl, nil
 }
 
-func dialTimeout(network, addr string, timeout time.Duration) (*Client, error) {
+func dialTimeout(network, addr string) (*Client, error) {
 
 	raddr, err := net.ResolveTCPAddr(network, addr)
 	if err != nil {
@@ -67,8 +67,6 @@ func dialTimeout(network, addr string, timeout time.Duration) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	sock.SetReadDeadline(time.Now().Add(timeout))
-	sock.SetWriteDeadline(time.Now().Add(timeout))
 
 	return &Client{sock: sock}, nil
 }
@@ -77,6 +75,9 @@ func (pl *Pool) Cmd(args ...interface{}) *Reply {
 
 	cn, _ := pl.pull()
 	defer pl.push(cn)
+
+	cn.sock.SetReadDeadline(time.Now().Add(pl.ctimeout))
+	cn.sock.SetWriteDeadline(time.Now().Add(pl.ctimeout))
 
 	return cn.Cmd(args...)
 }
