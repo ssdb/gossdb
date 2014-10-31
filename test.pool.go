@@ -7,12 +7,16 @@ import (
 
 func main() {
 
-	db, _ := ssdb.NewPool(ssdb.Config{
+	db, err := ssdb.NewPool(ssdb.Config{
 		Host:    "127.0.0.1",
-		Port:    6380,
+		Port:    8888,
 		Timeout: 3,  // timeout in second, default to 10
 		MaxConn: 10, // max connection number, default to 1
 	})
+	if err != nil {
+		fmt.Println("Connect Error:", err)
+		return
+	}
 	defer db.Close()
 
 	// API::Bool() bool
