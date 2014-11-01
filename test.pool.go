@@ -20,19 +20,26 @@ func main() {
 	defer db.Close()
 
 	// API::Bool() bool
-	if db.Cmd("set", "aa", "val-aaaaaaaaaaaaaa").Bool() {
+	if db.Cmd("set", "aa", "val-aaaaaaaaaaaaaaaaaa").Bool() {
 		fmt.Println("set OK")
 	}
 	// API::String() string
 	if rs := db.Cmd("get", "aa"); rs.State == "ok" {
 		fmt.Println("get OK\n\t", rs.String())
 	}
-	// API::Hash() map[string]string
+	// API::Hash() []Entry
 	db.Cmd("set", "bb", "val-bbbbbbbbbbbbbbbbbb")
+	db.Cmd("set", "cc", "val-cccccccccccccccccc")
 	if rs := db.Cmd("multi_get", "aa", "bb"); rs.State == "ok" {
 		fmt.Println("multi_get OK")
-		for k, v := range rs.Hash() {
-			fmt.Println("\t", k, v)
+		for _, v := range rs.Hash() {
+			fmt.Println("\t", v.Key, v.Value)
+		}
+	}
+	if rs := db.Cmd("scan", "", "", 10); rs.State == "ok" {
+		fmt.Println("scan OK")
+		for _, v := range rs.Hash() {
+			fmt.Println("\t", v.Key, v.Value)
 		}
 	}
 
@@ -40,8 +47,8 @@ func main() {
 	db.Cmd("multi_zset", "z", "b", -2, "c", 5, "d", 3)
 	if rs := db.Cmd("zrscan", "z", "", "", "", 10); rs.State == "ok" {
 		fmt.Println("zrscan OK")
-		for k, v := range rs.Hash() {
-			fmt.Println("\t", k, v)
+		for _, v := range rs.Hash() {
+			fmt.Println("\t", v.Key, v.Value)
 		}
 	}
 
@@ -62,8 +69,8 @@ func main() {
 	}
 	if rs := db.Cmd("multi_hget", "zone", "c1", "c2"); rs.State == "ok" {
 		fmt.Println("multi_hget OK")
-		for k, v := range rs.Hash() {
-			fmt.Println("\t", k, v)
+		for _, v := range rs.Hash() {
+			fmt.Println("\t", v.Key, v.Value)
 		}
 	}
 

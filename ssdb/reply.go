@@ -17,6 +17,10 @@ type Reply struct {
 	Data  []string
 }
 
+type Entry struct {
+	Key, Value string
+}
+
 func (c *Client) Cmd(args ...interface{}) *Reply {
 
 	r := &Reply{
@@ -92,16 +96,16 @@ func (r *Reply) List() []string {
 	return r.Data
 }
 
-func (r *Reply) Hash() map[string]string {
+func (r *Reply) Hash() []Entry {
 
-	hs := map[string]string{}
+	hs := []Entry{}
 
 	if len(r.Data) < 2 {
 		return hs
 	}
 
 	for i := 0; i < (len(r.Data) - 1); i += 2 {
-		hs[r.Data[i]] = r.Data[i+1]
+		hs = append(hs, Entry{r.Data[i], r.Data[i+1]})
 	}
 
 	return hs
