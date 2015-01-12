@@ -67,8 +67,8 @@ func (c *Client) Del(key string) (interface{}, error) {
 		return nil, err
 	}
 
-        //response looks like this: [ok 1]
-	if len(resp) == 2 && resp[0] == "ok" {
+	//response looks like this: [ok 1]
+	if len(resp) > 0 && resp[0] == "ok" {
 		return true, nil
 	}
 	return nil, fmt.Errorf("bad response:resp:%v:", resp)
