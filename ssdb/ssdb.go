@@ -66,10 +66,12 @@ func (c *Client) Del(key string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(resp) == 1 && resp[0] == "ok" {
+
+        //response looks like this: [ok 1]
+	if len(resp) == 2 && resp[0] == "ok" {
 		return true, nil
 	}
-	return nil, fmt.Errorf("bad response")
+	return nil, fmt.Errorf("bad response:resp:%v:", resp)
 }
 
 func (c *Client) send(args []interface{}) error {
