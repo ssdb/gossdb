@@ -8,10 +8,11 @@ import (
 )
 
 func main() {
-	ip := "127.0.0.1"
-	port := 8888
+	ip := "ssdb"
+	port := 16379
 	db, err := ssdb.Connect(ip, port)
 	if err != nil {
+		fmt.Errorf("ssdb.Connect:err:%v:\n", err)
 		os.Exit(1)
 	}
 

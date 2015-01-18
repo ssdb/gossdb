@@ -8,7 +8,8 @@ import (
 )
 
 type Client struct {
-	sock     *net.TCPConn
+	// sock     *net.TCPConn
+	sock chan *net.TCPConn
 	recv_buf bytes.Buffer
 }
 
@@ -55,20 +56,35 @@ func Connect(ip string, port int) (*Client, error) {
 		return nil, err
 	}
 	var c Client
-	c.sock = sock
+	// c.sock = sock
+	c.sock = make(chan *net.TCPConn, 1)
+	// fmt.Printf("Connect:putting socket:\n")
+	c.sock <- sock
+	// fmt.Printf("Connect:done putting socket:\n")
 	return &c, nil
 }
 
 func (c *Client) Do(args ...interface{}) ([]string, error) {
-	return c.do(args...)
+
+	// fmt.Printf("Do:pulling socket\n")
+	sock := <- c.sock
+	// fmt.Printf("Do:done pulling socket\n")
+	defer func () { 
+		// fmt.Printf("Do:putting socket\n")
+		c.sock <- sock 
+		// fmt.Printf("Do:done putting socket\n")
+
+	}()
+
+	return c.do(sock, args...)
 }
 
-func (c *Client) do(args ...interface{}) ([]string, error) {
-	err := c.send(args)
+func (c *Client) do(sock *net.TCPConn, args ...interface{}) ([]string, error) {
+	err := c.send(sock, args)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.recv()
+	resp, err := c.recv(sock)
 	return resp, err
 }
 
@@ -136,7 +152,7 @@ func (c *ConnectionPoolWrapper) Del(key string) (interface{}, error) {
 	return db.Del(key)
 }
 
-func (c *Client) send(args []interface{}) error {
+func (c *Client) send(sock *net.TCPConn, args []interface{}) error {
 	var buf bytes.Buffer
 	for _, arg := range args {
 		var s string
@@ -176,15 +192,40 @@ func (c *Client) send(args []interface{}) error {
 		buf.WriteByte('\n')
 	}
 	buf.WriteByte('\n')
-	_, err := c.sock.Write(buf.Bytes())
+
+	// fmt.Printf("send:pulling socket\n")
+	// sock := <- c.sock
+	// fmt.Printf("send:done pulling socket\n")
+	// defer func () { 
+		// fmt.Printf("send:putting socket\n")
+		// c.sock <- sock 
+		// fmt.Printf("send:done putting socket\n")
+
+	// }()
+
+	_, err := sock.Write(buf.Bytes())
+
 	return err
 }
 
-func (c *Client) recv() ([]string, error) {
+func (c *Client) recv(sock *net.TCPConn) ([]string, error) {
 	var tmp [8192]byte
+
+	// fmt.Printf("recv:pulling socket\n")
+	// sock := <- c.sock
+	// fmt.Printf("recv:done pulling socket\n")
+
+	// defer func () { 
+		// fmt.Printf("recv:putting socket\n")
+		// c.sock <- sock 
+		// fmt.Printf("recv:done putting socket\n")
+
+	// }()
+
 	for {
-		n, err := c.sock.Read(tmp[0:])
+		n, err := sock.Read(tmp[0:])
 		if err != nil {
+
 			return nil, err
 		}
 		c.recv_buf.Write(tmp[0:n])
@@ -237,7 +278,22 @@ func (c *Client) parse() []string {
 
 // Close The Client Connection
 func (c *Client) Close() error {
-	return c.sock.Close()
+
+	// fmt.Printf("Close:pulling socket\n")
+	sock := <- c.sock
+	// fmt.Printf("Close:done pulling socket\n")
+	// defer func () { c.sock <- sock }()
+		// fmt.Printf("recv:done pulling socket\n")
+
+	defer func () { 
+		// fmt.Printf("Close:putting socket\n")
+		c.sock <- sock 
+		// fmt.Printf("Close:done putting socket\n")
+
+	}()
+
+	return sock.Close()
+
 }
 
 

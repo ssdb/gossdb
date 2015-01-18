@@ -31,7 +31,7 @@ func TestConnect(t *testing.T) {
 
 }
 
-func TestInitPool(t *testing.T) {
+func QTestInitPool(t *testing.T) {
 
 	cpm, err := InitPool(ip, port, 11)
 	if err != nil {
