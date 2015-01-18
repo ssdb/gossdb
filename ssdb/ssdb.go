@@ -86,7 +86,7 @@ func (c *Client) Set(key string, val string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(resp) == 2 && resp[0] == "ok" {
+	if len(resp) > 0 && resp[0] == "ok" {
 		return true, nil
 	}
 	return nil, fmt.Errorf("bad response")
