@@ -57,22 +57,16 @@ func Connect(ip string, port int) (*Client, error) {
 	var c Client
 
 	c.sock = make(chan *net.TCPConn, 1)
-	// fmt.Printf("Connect:putting socket:\n")
 	c.sock <- sock
-	// fmt.Printf("Connect:done putting socket:\n")
+
 	return &c, nil
 }
 
 func (c *Client) Do(args ...interface{}) ([]string, error) {
 
-	// fmt.Printf("Do:pulling socket\n")
 	c._sock = <- c.sock
-	// fmt.Printf("Do:done pulling socket\n")
 	defer func () { 
-		// fmt.Printf("Do:putting socket\n")
 		c.sock <- c._sock 
-		// fmt.Printf("Do:done putting socket\n")
-
 	}()
 
 	return c.do(args...)
@@ -194,16 +188,6 @@ func (c *Client) send(args []interface{}) error {
 	}
 	buf.WriteByte('\n')
 
-	// fmt.Printf("send:pulling socket\n")
-	// sock := <- c.sock
-	// fmt.Printf("send:done pulling socket\n")
-	// defer func () { 
-		// fmt.Printf("send:putting socket\n")
-		// c.sock <- sock 
-		// fmt.Printf("send:done putting socket\n")
-
-	// }()
-
 	_, err := sock.Write(buf.Bytes())
 
 	return err
@@ -213,17 +197,6 @@ func (c *Client) recv() ([]string, error) {
 
 	var sock = c._sock
 	var tmp [8192]byte
-
-	// fmt.Printf("recv:pulling socket\n")
-	// sock := <- c.sock
-	// fmt.Printf("recv:done pulling socket\n")
-
-	// defer func () { 
-		// fmt.Printf("recv:putting socket\n")
-		// c.sock <- sock 
-		// fmt.Printf("recv:done putting socket\n")
-
-	// }()
 
 	for {
 		n, err := sock.Read(tmp[0:])
@@ -282,16 +255,11 @@ func (c *Client) parse() []string {
 // Close The Client Connection
 func (c *Client) Close() error {
 
-	// fmt.Printf("Close:pulling socket\n")
 	sock := <- c.sock
-	// fmt.Printf("Close:done pulling socket\n")
-	// defer func () { c.sock <- sock }()
-		// fmt.Printf("recv:done pulling socket\n")
 
 	defer func () { 
-		// fmt.Printf("Close:putting socket\n")
+
 		c.sock <- sock 
-		// fmt.Printf("Close:done putting socket\n")
 
 	}()
 
@@ -306,10 +274,8 @@ func (cpm *ConnectionPoolWrapper) Close() error {
 
 		select {
 			case db := <- cpm.conn:
-				// fmt.Printf("ConnectionPoolWrapper.Close:closing one\n")
 				db.Close()
 			default:
-				// fmt.Printf("ConnectionPoolWrapper.Close:skipping\n")
 				return nil
 		}
 
