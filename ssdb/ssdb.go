@@ -8,9 +8,9 @@ import (
 )
 
 type Client struct {
-	// sock     *net.TCPConn
 	sock chan *net.TCPConn
 	recv_buf bytes.Buffer
+	_sock  *net.TCPConn
 }
 
 type ConnectionPoolWrapper struct {
@@ -22,7 +22,6 @@ func InitPool(ip string, port int, size int) (*ConnectionPoolWrapper, error) {
 
     cpm := new(ConnectionPoolWrapper)
 
-	// cpm = &ConnectionPoolWrapper{}
 	cpm.conn = make(chan *Client, size)
 	for x := 0; x < size; x++ {
 		conn, err := Connect(ip, port)
@@ -56,7 +55,7 @@ func Connect(ip string, port int) (*Client, error) {
 		return nil, err
 	}
 	var c Client
-	// c.sock = sock
+
 	c.sock = make(chan *net.TCPConn, 1)
 	// fmt.Printf("Connect:putting socket:\n")
 	c.sock <- sock
@@ -67,24 +66,24 @@ func Connect(ip string, port int) (*Client, error) {
 func (c *Client) Do(args ...interface{}) ([]string, error) {
 
 	// fmt.Printf("Do:pulling socket\n")
-	sock := <- c.sock
+	c._sock = <- c.sock
 	// fmt.Printf("Do:done pulling socket\n")
 	defer func () { 
 		// fmt.Printf("Do:putting socket\n")
-		c.sock <- sock 
+		c.sock <- c._sock 
 		// fmt.Printf("Do:done putting socket\n")
 
 	}()
 
-	return c.do(sock, args...)
+	return c.do(args...)
 }
 
-func (c *Client) do(sock *net.TCPConn, args ...interface{}) ([]string, error) {
-	err := c.send(sock, args)
+func (c *Client) do(args ...interface{}) ([]string, error) {
+	err := c.send(args)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := c.recv(sock)
+	resp, err := c.recv()
 	return resp, err
 }
 
@@ -152,7 +151,9 @@ func (c *ConnectionPoolWrapper) Del(key string) (interface{}, error) {
 	return db.Del(key)
 }
 
-func (c *Client) send(sock *net.TCPConn, args []interface{}) error {
+func (c *Client) send(args []interface{}) error {
+
+	var sock = c._sock
 	var buf bytes.Buffer
 	for _, arg := range args {
 		var s string
@@ -208,7 +209,9 @@ func (c *Client) send(sock *net.TCPConn, args []interface{}) error {
 	return err
 }
 
-func (c *Client) recv(sock *net.TCPConn) ([]string, error) {
+func (c *Client) recv() ([]string, error) {
+
+	var sock = c._sock
 	var tmp [8192]byte
 
 	// fmt.Printf("recv:pulling socket\n")
