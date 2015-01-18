@@ -60,6 +60,10 @@ func Connect(ip string, port int) (*Client, error) {
 }
 
 func (c *Client) Do(args ...interface{}) ([]string, error) {
+	return c.do(args...)
+}
+
+func (c *Client) do(args ...interface{}) ([]string, error) {
 	err := c.send(args)
 	if err != nil {
 		return nil, err
