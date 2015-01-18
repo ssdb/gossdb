@@ -12,6 +12,39 @@ type Client struct {
 	recv_buf bytes.Buffer
 }
 
+type ConnectionPoolWrapper struct {
+	size int
+	conn chan *Client
+}
+
+func InitPool(ip string, port int, size int) (*ConnectionPoolWrapper, error) {
+
+    cpm := new(ConnectionPoolWrapper)
+
+	// cpm = &ConnectionPoolWrapper{}
+	cpm.conn = make(chan *Client, size)
+	for x := 0; x < size; x++ {
+		conn, err := Connect(ip, port)
+		if err != nil {
+			return cpm, err
+		}
+ 
+		// If the init function succeeded, add the connection to the channel
+		cpm.conn <- conn
+	}
+	cpm.size = size
+	return cpm, nil
+
+}
+
+func (p *ConnectionPoolWrapper) GetConnection() *Client {
+	return <-p.conn
+}
+ 
+func (p *ConnectionPoolWrapper) ReleaseConnection(conn *Client) {
+	p.conn <- conn
+}
+
 func Connect(ip string, port int) (*Client, error) {
 	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:%d", ip, port))
 	if err != nil {
@@ -46,6 +79,15 @@ func (c *Client) Set(key string, val string) (interface{}, error) {
 	return nil, fmt.Errorf("bad response")
 }
 
+
+func (c *ConnectionPoolWrapper) Set(key string, val string) (interface{}, error) {
+
+	db := c.GetConnection()
+	defer c.ReleaseConnection(db)
+
+	return db.Set(key, val)
+}
+
 // TODO: Will somebody write addition semantic methods?
 func (c *Client) Get(key string) (interface{}, error) {
 	resp, err := c.Do("get", key)
@@ -61,17 +103,33 @@ func (c *Client) Get(key string) (interface{}, error) {
 	return nil, fmt.Errorf("bad response")
 }
 
+func (c *ConnectionPoolWrapper) Get(key string) (interface{}, error) {
+
+	db := c.GetConnection()
+	defer c.ReleaseConnection(db)
+
+	return db.Get(key)
+}
+
 func (c *Client) Del(key string) (interface{}, error) {
 	resp, err := c.Do("del", key)
 	if err != nil {
 		return nil, err
 	}
 
-        //response looks like this: [ok 1]
+	//response looks like this: [ok 1]
 	if len(resp) == 2 && resp[0] == "ok" {
 		return true, nil
 	}
 	return nil, fmt.Errorf("bad response:resp:%v:", resp)
+}
+
+func (c *ConnectionPoolWrapper) Del(key string) (interface{}, error) {
+
+	db := c.GetConnection()
+	defer c.ReleaseConnection(db)
+
+	return db.Del(key)
 }
 
 func (c *Client) send(args []interface{}) error {
@@ -176,4 +234,23 @@ func (c *Client) parse() []string {
 // Close The Client Connection
 func (c *Client) Close() error {
 	return c.sock.Close()
+}
+
+
+func (cpm *ConnectionPoolWrapper) Close() error {
+
+	for {
+
+		select {
+			case db := <- cpm.conn:
+				// fmt.Printf("ConnectionPoolWrapper.Close:closing one\n")
+				db.Close()
+			default:
+				// fmt.Printf("ConnectionPoolWrapper.Close:skipping\n")
+				return nil
+		}
+
+	}
+
+	return nil
 }
