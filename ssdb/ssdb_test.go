@@ -81,7 +81,7 @@ func TestGet(t *testing.T) {
 	}
 	defer db.Close()
 
-	val, err := db.Set("a", "xxx")
+	val, err := db.Set("a", "xxxdodoehodh eodhoe dohe j")
 	if val != true {
         t.Error("Set val returned false")
 	}	
@@ -96,8 +96,11 @@ func TestGet(t *testing.T) {
 	if err != nil {
         t.Error("Get returned err")
 	}
-	if val != "xxx" {
-        t.Error("Get did not return a")
+	if val != "xxxdodoehodh eodhoe dohe j" {
+        t.Error("Get did not return the right value")
+	}
+	if val == "xxx" {
+        t.Error("Get did not return return xxx")
 	}	
 
 }
