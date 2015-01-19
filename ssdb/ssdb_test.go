@@ -29,9 +29,32 @@ func TestConnect(t *testing.T) {
 	}
 	defer db.Close()
 
+	db, err = Connect(ip, port)
+	if err != nil {
+        t.Error("Close:second connect raised an error:%v:", err)
+	}
+
 }
 
-func QTestInitPool(t *testing.T) {
+
+func TestClose(t *testing.T) {
+
+	db, err := Connect(ip, port)
+	if err != nil {
+        t.Error("Close:connect returned an err:%v:", err)
+	}
+	if db == nil {
+        t.Error("Close:connect returned a nil db")
+	}
+
+	db.Close()
+	if err != nil {
+        t.Error("Close:returned an error:%v:", err)
+	}
+
+}
+
+func TestInitPool(t *testing.T) {
 
 	cpm, err := InitPool(ip, port, 11)
 	if err != nil {
