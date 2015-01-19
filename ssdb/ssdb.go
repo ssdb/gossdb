@@ -9,6 +9,7 @@ import (
 
 type Client struct {
 	sock chan *net.TCPConn
+	recv_buf bytes.Buffer
 	_sock  *net.TCPConn
 }
 
@@ -211,7 +212,6 @@ func (c *Client) recv() ([]string, error) {
 
 	var sock = c._sock
 	var tmp [8192]byte
-	var recv_buf = new(bytes.Buffer)
 
 	for {
 		n, err := sock.Read(tmp[0:])
@@ -219,19 +219,17 @@ func (c *Client) recv() ([]string, error) {
 
 			return nil, err
 		}
-
-		recv_buf.Write(tmp[0:n])
-		resp := parse(recv_buf)
+		c.recv_buf.Write(tmp[0:n])
+		resp := c.parse()
 		if resp == nil || len(resp) > 0 {
 			return resp, nil
 		}
 	}
 }
 
-func parse(recv_buf *bytes.Buffer) []string {
-	resp := []string{}	
-
-	buf := recv_buf.Bytes()
+func (c *Client) parse() []string {
+	resp := []string{}
+	buf := c.recv_buf.Bytes()
 	var idx, offset int
 	idx = 0
 	offset = 0
@@ -248,7 +246,7 @@ func parse(recv_buf *bytes.Buffer) []string {
 			if len(resp) == 0 {
 				continue
 			} else {
-				recv_buf.Next(offset)
+				c.recv_buf.Next(offset)
 				return resp
 			}
 		}
@@ -257,7 +255,7 @@ func parse(recv_buf *bytes.Buffer) []string {
 		if err != nil || size < 0 {
 			return nil
 		}
-		if offset+size >= recv_buf.Len() {
+		if offset+size >= c.recv_buf.Len() {
 			break
 		}
 
