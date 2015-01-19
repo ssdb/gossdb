@@ -74,6 +74,10 @@ func (c *Client) Del(key string) (interface{}, error) {
 	return nil, fmt.Errorf("bad response:resp:%v:", resp)
 }
 
+func (c *Client) Send(args ...interface{}) error {
+	return c.send(args);
+}
+
 func (c *Client) send(args []interface{}) error {
 	var buf bytes.Buffer
 	for _, arg := range args {
@@ -116,6 +120,10 @@ func (c *Client) send(args []interface{}) error {
 	buf.WriteByte('\n')
 	_, err := c.sock.Write(buf.Bytes())
 	return err
+}
+
+func (c *Client) Recv() ([]string, error) {
+	return c.recv();
 }
 
 func (c *Client) recv() ([]string, error) {

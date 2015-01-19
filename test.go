@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-
+	"strconv"
 	"./ssdb"
 )
 
@@ -48,5 +48,14 @@ func main() {
 	for i := 1; i < len(resp); i += 2 {
 		fmt.Printf("  %s : %3s\n", resp[i], resp[i+1])
 	}
+
+	//_ = db.Send("dump", "", "", "-1");
+	_ = db.Send("sync140");
+	// receive multi responses on one request
+	for{
+		resp, _ := db.Recv()
+		fmt.Printf("%s\n", strconv.Quote(fmt.Sprintf("%s", resp)));
+	}
+
 	return
 }
