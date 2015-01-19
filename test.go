@@ -28,6 +28,24 @@ func main() {
 		os.Exit(1)
 	}
 
+	val, err = db.Do("info");
+	fmt.Printf("called info:%s:\n", val);
+	if err != nil {
+		os.Exit(1)
+	}
+
+	val, err = db.Do("keys", "", "", 100);
+	fmt.Printf("called keys:%s:\n", val);
+	if err != nil {
+		os.Exit(1)
+	}
+
+	val, err = db.Do("scan", "", "", 100);
+	fmt.Printf("called scan:%s:\n", val);
+	if err != nil {
+		os.Exit(1)
+	}
+
 	db.Set("a", "xxx")
 	val, err = db.Get("a")
 	fmt.Printf("Got:%v:\n", val)
