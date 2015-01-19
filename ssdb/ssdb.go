@@ -119,17 +119,17 @@ func (c *Client) send(args []interface{}) error {
 }
 
 func (c *Client) recv() ([]string, error) {
-	var tmp [8192]byte
+	var tmp [1]byte
 	for {
+		resp := c.parse()
+		if resp == nil || len(resp) > 0 {
+			return resp, nil
+		}
 		n, err := c.sock.Read(tmp[0:])
 		if err != nil {
 			return nil, err
 		}
 		c.recv_buf.Write(tmp[0:n])
-		resp := c.parse()
-		if resp == nil || len(resp) > 0 {
-			return resp, nil
-		}
 	}
 }
 
@@ -170,6 +170,7 @@ func (c *Client) parse() []string {
 		offset += size + 1
 	}
 
+	//fmt.Printf("buf.size: %d packet not ready...\n", len(buf))
 	return []string{}
 }
 
