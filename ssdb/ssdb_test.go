@@ -52,6 +52,17 @@ func TestClose(t *testing.T) {
         t.Error("Close:returned an error:%v:", err)
 	}
 
+	val, err := db.Set("a", "xxx")
+	if val == true {
+        t.Error("Close:Set:val returned true after db closed")
+	}	
+	if val != nil {
+        t.Error("Close:Set:val returned non-nil after db closed")
+	}	
+	if err == nil {
+        t.Error("Close:Set returned no error after db closed")
+	}
+
 }
 
 func TestInitPool(t *testing.T) {

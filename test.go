@@ -34,6 +34,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	val, err = db.Info();
+	fmt.Printf("called info again:%s:\n", val);
+	if err != nil {
+		os.Exit(1)
+	}
+
 	val, err = db.Do("keys", "", "", 100);
 	fmt.Printf("called keys:%s:\n", val);
 	if err != nil {

@@ -107,7 +107,22 @@ func (c *Client) Get(key string) (interface{}, error) {
 		return nil, err
 	}
 	if len(resp) > 0 && resp[0] == "ok" {
+		// return resp[1], nil
 		return resp[1], nil
+	}
+	if resp[0] == "not_found" {
+		return nil, nil
+	}
+	return nil, fmt.Errorf("bad response")
+}
+
+func (c *Client) Info() (interface{}, error) {
+	resp, err := c.Do("info")
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) > 0 && resp[0] == "ok" {
+		return resp, nil
 	}
 	if resp[0] == "not_found" {
 		return nil, nil
