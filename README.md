@@ -11,6 +11,10 @@ The Do() method will return an array of string if no error. The first element in
 
 Refer to the [PHP documentation](http://www.ideawu.com/ssdb/docs/php/) to checkout a complete list of all avilable commands and corresponding responses.
 
+## gossdb is not thread-safe(goroutine-safe)
+
+Never use one connection(returned by ssdb.Connect()) through multi goroutines, because the connection is not thread-safe.
+
 ## Example
 
 	package main
