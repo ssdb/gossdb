@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"os"
-
+	"strconv"
 	"./ssdb"
 )
 
 func main() {
-	ip := "ssdb"
-	port := 16379
+	ip := "127.0.0.1"
+	port := 8888
 	db, err := ssdb.Connect(ip, port)
 	if err != nil {
 		fmt.Errorf("ssdb.Connect:err:%v:\n", err)
@@ -96,6 +96,15 @@ func main() {
 	fmt.Printf("cpm.Get:return:val:%s:err:%v:\n", val, err)
 
 	cpm.Close()
+
+
+	//_ = db.Send("dump", "", "", "-1");
+	_ = db.Send("sync140");
+	// receive multi responses on one request
+	for{
+		resp, _ := db.Recv()
+		fmt.Printf("%s\n", strconv.Quote(fmt.Sprintf("%s", resp)));
+	}
 
 	return
 }
