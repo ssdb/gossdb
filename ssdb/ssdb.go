@@ -95,11 +95,10 @@ func (c *Client) send(args []interface{}) error {
 				buf.WriteByte('\n')
 			}
 			continue
-		case int:
+		case int, int8, int16, int32, int64,
+			uint, uint8, uint16, uint32, uint64:
 			s = fmt.Sprintf("%d", arg)
-		case int64:
-			s = fmt.Sprintf("%d", arg)
-		case float64:
+		case float32, float64, complex64, complex128:
 			s = fmt.Sprintf("%f", arg)
 		case bool:
 			if arg {
