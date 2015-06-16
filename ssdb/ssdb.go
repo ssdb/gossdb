@@ -127,7 +127,7 @@ func (c *Client) Recv() ([]string, error) {
 }
 
 func (c *Client) recv() ([]string, error) {
-	var tmp [1]byte
+	var tmp [8192]byte
 	for {
 		resp := c.parse()
 		if resp == nil || len(resp) > 0 {
