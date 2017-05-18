@@ -75,7 +75,7 @@ func (c *Client) Del(key string) (interface{}, error) {
 }
 
 func (c *Client) Send(args ...interface{}) error {
-	return c.send(args);
+	return c.send(args)
 }
 
 func (c *Client) send(args []interface{}) error {
@@ -123,22 +123,31 @@ func (c *Client) send(args []interface{}) error {
 }
 
 func (c *Client) Recv() ([]string, error) {
-	return c.recv();
+	return c.recv()
 }
 
 func (c *Client) recv() ([]string, error) {
+	// first recv content
 	var tmp [8192]byte
 	for {
-		resp := c.parse()
-		if resp == nil || len(resp) > 0 {
-			return resp, nil
-		}
 		n, err := c.sock.Read(tmp[0:])
 		if err != nil {
 			return nil, err
 		}
 		c.recv_buf.Write(tmp[0:n])
+		// notice: content may contain end tag "\n\n" ignore that case
+		if (n >= 2) && (tmp[n-2] == '\n') && (tmp[n-1] == '\n') {
+			break
+		} else if (n < 2) && (c.recv_buf.Len() >= 2) {
+			contSlic := c.recv_buf.Bytes()
+			if (contSlic[len(contSlic)-1] == '\n') && (contSlic[len(contSlic)-2] == '\n') {
+				break
+			}
+		}
 	}
+	// recv whole content begin parse
+	resp := c.parse()
+	return resp, nil
 }
 
 func (c *Client) parse() []string {
@@ -157,12 +166,8 @@ func (c *Client) parse() []string {
 		offset += idx + 1
 		//fmt.Printf("> [%s]\n", p);
 		if len(p) == 0 || (len(p) == 1 && p[0] == '\r') {
-			if len(resp) == 0 {
-				continue
-			} else {
-				c.recv_buf.Next(offset)
-				return resp
-			}
+			c.recv_buf.Next(offset)
+			return resp
 		}
 
 		size, err := strconv.Atoi(string(p))
