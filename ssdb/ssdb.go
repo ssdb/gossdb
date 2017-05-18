@@ -160,7 +160,9 @@ func (c *Client) parse() []string {
 			if len(resp) == 0 {
 				continue
 			} else {
-				c.recv_buf.Next(offset)
+				var new_buf bytes.Buffer
+				new_buf.Write(buf[offset:])
+				c.recv_buf = new_buf
 				return resp
 			}
 		}
