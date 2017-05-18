@@ -127,10 +127,7 @@ func (c *Client) Recv() ([]string, error) {
 }
 
 func (c *Client) recv() ([]string, error) {
-	// first clear recv buff
-	c.recv_buf.Reset()
-
-	// second recv content
+	// first recv content
 	var tmp [8192]byte
 	for {
 		n, err := c.sock.Read(tmp[0:])
@@ -169,8 +166,7 @@ func (c *Client) parse() []string {
 		offset += idx + 1
 		//fmt.Printf("> [%s]\n", p);
 		if len(p) == 0 || (len(p) == 1 && p[0] == '\r') {
-			//recv function has clear recv_buf no need call
-			//c.recv_buf.Next(offset)
+			c.recv_buf.Next(offset)
 			return resp
 		}
 
