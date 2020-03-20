@@ -57,5 +57,13 @@ Never use one connection(returned by ssdb.Connect()) through multi goroutines, b
 			fmt.Printf("  %s : %3s\n", resp[i], resp[i+1]);
 		}
 		return;
-	}
+}
+
+#code
+##2
+ok
+##12
+client_error
+##25
+wrong number of arguments
 
