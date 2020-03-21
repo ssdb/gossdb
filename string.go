@@ -1,7 +1,7 @@
 package gossdb
 
 //:set
-func (c *Client) Set(key string, val string) error {
+func (c *Client) Set(key string, val interface{}) error {
 	_, err := c.Do("set", key, val)
 	return err
 }
