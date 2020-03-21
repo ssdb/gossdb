@@ -7,10 +7,10 @@ func (c *Client) Set(key string, val string) error {
 }
 
 //:get
-func (c *Client) Get(key string) (interface{}, error) {
+func (c *Client) Get(key string) (string, error) {
 	result, err := c.Do("get", key)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	return result[0], nil
 }
