@@ -57,30 +57,30 @@ func (c *Client) Hmdel(key string, filed ...string) error {
 
 //:hincr
 func (c *Client) Hincr(key string, filed string, increment int64) (int64, error) {
-	reslut, err := c.Do("hincr", key, filed, increment)
+	result, err := c.Do("hincr", key, filed, increment)
 	if err != nil {
 		return 0, err
 	}
-	return strconv.ParseInt(reslut[0], 10, 64)
+	return strconv.ParseInt(result[0], 10, 64)
 }
 
 //:hsize
 func (c *Client) Hsize(key string) (int64, error) {
-	reslut, err := c.Do("hsize", key)
+	result, err := c.Do("hsize", key)
 	if err != nil {
 		return 0, err
 	}
-	return strconv.ParseInt(reslut[0], 10, 64)
+	return strconv.ParseInt(result[0], 10, 64)
 }
 
 //:hexists
 func (c *Client) Hexists(key string, filed string) (bool, error) {
-	reslut, err := c.Do("hexists", key, filed)
+	result, err := c.Do("hexists", key, filed)
 	if err != nil {
 		return false, err
 	}
 	exit := true
-	if reslut[0] == "0" {
+	if result[0] == "0" {
 		exit = false
 	}
 	return exit, nil
@@ -88,27 +88,27 @@ func (c *Client) Hexists(key string, filed string) (bool, error) {
 
 //:hdecr
 func (c *Client) Hdecr(key string, filed string, decrement int64) (int64, error) {
-	reslut, err := c.Do("hdecr", key, filed, decrement)
+	result, err := c.Do("hdecr", key, filed, decrement)
 	if err != nil {
 		return 0, err
 	}
-	return strconv.ParseInt(reslut[0], 10, 64)
+	return strconv.ParseInt(result[0], 10, 64)
 }
 
 //:hkeys
 func (c *Client) Hkeys(key string) ([]string, error) {
-	reslut, err := c.Do("hkeys", key)
+	result, err := c.Do("hkeys", key)
 	if err != nil {
 		return []string{}, err
 	}
-	return reslut, nil
+	return result, nil
 }
 
 //:hscan
 func (c *Client) Hscan(key string) ([]string, error) {
-	reslut, err := c.Do("hscan", key)
+	result, err := c.Do("hscan", key)
 	if err != nil {
 		return []string{}, err
 	}
-	return reslut, nil
+	return result, nil
 }
