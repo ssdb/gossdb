@@ -68,7 +68,8 @@ func (c *Client) Qclear(key string) error {
 	return err
 }
 
-//:qslice
+//:qslice Returns a portion of elements from the queue at the specified range [begin, end]. begin and end could be negative.
+//false on error, otherwise an array containing items.
 func (c *Client) Qslice(key string, start, end int64) ([]string, error) {
 	result, err := c.Do("qslice", key, start, end)
 	if err != nil {
@@ -77,11 +78,33 @@ func (c *Client) Qslice(key string, start, end int64) ([]string, error) {
 	return result, nil
 }
 
-//:qlist (for queue/list type only)
-//func (c *Client) Qlist() ([]string, error) {
-//	result, err := c.Do("qlist")
-//	if err != nil {
-//		return []string{}, err
-//	}
-//	return result, nil
-//}
+//:qtrim_back Remove multi elements from the tail of a queue.
+//false on error. Return the number of elements removed.
+func (c *Client) Qtrimback(key string, count int64) ([]string, error) {
+	result, err := c.Do("qtrim_back", key, count)
+	if err != nil {
+		return []string{}, err
+	}
+	return result, nil
+}
+
+//:qtrim_front Remove multi elements from the head of a queue.
+//false on error. Return the number of elements removed.
+func (c *Client) Qtrimfront(key string, count int64) ([]string, error) {
+	result, err := c.Do("qtrim_front", key, count)
+	if err != nil {
+		return []string{}, err
+	}
+	return result, nil
+}
+
+//:qlist List list/queue names in range (name_start, name_end]. ("", ""] means no range limit.
+//false on error, otherwise an array containing the names.
+//example $ssdb->qlist('a', 'z', 10);
+func (c *Client) Qlist(key, nameStart, nameEnd string, limit int) ([]string, error) {
+	result, err := c.Do("qlist", key, nameStart, nameEnd, limit)
+	if err != nil {
+		return []string{}, err
+	}
+	return result, nil
+}

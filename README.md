@@ -16,54 +16,34 @@ Refer to the [PHP documentation](http://www.ideawu.com/ssdb/docs/php/) to checko
 Never use one connection(returned by ssdb.Connect()) through multi goroutines, because the connection is not thread-safe.
 
 ## Example
+```go
+        db, err := gossdb.Connect("116.62.245.150:6389")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 
-	package main
+	for i := 0; i < 10; i++ {
+    		count, err := ssdb.Zset("scores", int64(i), strconv.Itoa(i))
+    		if err != nil {
+    			fmt.Println(err.Error())
+    		}
+    		fmt.Println("zset count ", count)
+    	}
+    	//err := ssdb.Flushdb()
+    	scores, err := ssdb.Zrange("scores", 0, -1)
+    	if err != nil {
+    		fmt.Println(err)
+    	}
+    	fmt.Println("scores = ", scores)
+```
 	
-	import (
-			"fmt"
-			"os"
-			"./ssdb"
-		   )
-		   
-	func main(){
-		ip := "127.0.0.1";
-		port := 8888;
-		db, err := ssdb.Connect(ip, port);
-		if(err != nil){
-			os.Exit(1);
-		}
-		
-		var val interface{};
-		db.Set("a", "xxx");
-		val, err = db.Get("a");
-		fmt.Printf("%s\n", val);
-		db.Del("a");
-		val, err = db.Get("a");
-		fmt.Printf("%s\n", val);
-		
-		db.Do("zset", "z", "a", 3);
-		db.Do("multi_zset", "z", "b", -2, "c", 5, "d", 3);
-		resp, err := db.Do("zrange", "z", 0, 10);
-		if err != nil{
-			os.Exit(1);
-		}
-		if len(resp) % 2 != 1{
-			fmt.Printf("bad response");
-			os.Exit(1);
-		}
-		
-		fmt.Printf("Status: %s\n", resp[0]);
-		for i:=1; i<len(resp); i+=2{
-			fmt.Printf("  %s : %3s\n", resp[i], resp[i+1]);
-		}
-		return;
-}
-
-#code
-##2
-ok
-##12
-client_error
-##25
-wrong number of arguments
+#限制
+ * 最大 Key 长度	200 字节  
+ * 最大 Value 长度	31MB  
+ * 最大请求或响应长度	31MB  
+ * 单个 HASH 中的元素数量	9,223,372,036,854,775,807  
+ * 单个 ZSET 中的元素数量	9,223,372,036,854,775,807  
+ * 单个 QUEUE 中的元素数量	9,223,372,036,854,775,807  
+ * 命令最多参数个数	所有参数加起来体积不超过 31MB 大小  
 
