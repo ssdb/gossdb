@@ -59,11 +59,6 @@ Never use one connection(returned by ssdb.Connect()) through multi goroutines, b
 		return;
 }
 
-#code
-##2
-ok
-##12
-client_error
-##25
-wrong number of arguments
+#doc
+http://ssdb.io/docs/php/
 

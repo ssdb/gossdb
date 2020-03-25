@@ -54,25 +54,11 @@ func zset(ssdb *gossdb.Client) {
 		}
 		fmt.Println("zset count ", count)
 	}
-	size, err := ssdb.Zremrangebyrank("scores", 0, 5)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("szie = ", size)
-	m := map[string]int64{
-		"a": 1200,
-		"c": 2300,
-	}
-
-	v, err := ssdb.Zmultiset("scores", m)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(v)
-	//
+	//err := ssdb.Flushdb()
 	scores, err := ssdb.Zrange("scores", 0, -1)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(scores)
+	fmt.Println("scores = ", scores)
+
 }

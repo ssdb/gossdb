@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -28,7 +29,7 @@ func Connect(addr string) (*Client, error) {
 }
 
 func (c *Client) Do(args ...interface{}) ([]string, error) {
-	err := c.send(args)
+	err := c.send(args...)
 	if err != nil {
 		return nil, err
 	}
@@ -36,24 +37,7 @@ func (c *Client) Do(args ...interface{}) ([]string, error) {
 	return resp, err
 }
 
-func (c *Client) Del(key string) (interface{}, error) {
-	resp, err := c.Do("del", key)
-	if err != nil {
-		return nil, err
-	}
-
-	//response looks like this: [ok 1]
-	if len(resp) > 0 && resp[0] == "ok" {
-		return true, nil
-	}
-	return nil, fmt.Errorf("bad response:resp:%v:", resp)
-}
-
-func (c *Client) Send(args ...interface{}) error {
-	return c.send(args)
-}
-
-func (c *Client) send(args []interface{}) error {
+func (c *Client) send(args ...interface{}) error {
 	var buf bytes.Buffer
 	for _, arg := range args {
 		var s string
@@ -97,70 +81,20 @@ func (c *Client) send(args []interface{}) error {
 	return err
 }
 
-func (c *Client) Recv() ([]string, error) {
-	return c.recv()
-}
-
 func (c *Client) recv() ([]string, error) {
-	var tmp [8192]byte
-	n, err := c.conn.Read(tmp[0:])
+	var data [8192]byte //8M
+	n, err := c.conn.Read(data[0:])
 	if err != nil {
-		return nil, err
+		return []string{}, err
 	}
-	c.recvBuf.Write(tmp[0:n])
-	//fmt.Println("---------start------------")
-	//fmt.Println(string(tmp[0:n]))
-	//fmt.Println("---------end------------")
-	//resp := c.parse()
-	//resp := c.parse_1()
-	//if resp == nil || len(resp) > 0 {
-	//	return resp, nil
-	//}
-	return c.parse(tmp[0:n])
+	_, err = c.recvBuf.Write(data[0:n])
+	if err != nil {
+		return []string{}, err
+	}
+	return c.parse(data[0:n])
 }
 
-//参数解析
-//func (c *Client) parse() []string {
-//	resp := []string{}
-//	buf := c.recvBuf.Bytes()
-//	var idx, offset int
-//	idx = 0
-//	offset = 0
-//	for {
-//		idx = bytes.IndexByte(buf[offset:], '\n')
-//		if idx == -1 {
-//			break
-//		}
-//		p := buf[offset : offset+idx]
-//		offset += idx + 1
-//		//fmt.Printf("> [%s]\n", p);
-//		if len(p) == 0 || (len(p) == 1 && p[0] == '\r') {
-//			if len(resp) == 0 {
-//				continue
-//			} else {
-//				var new_buf bytes.Buffer
-//				new_buf.Write(buf[offset:])
-//				c.recvBuf = new_buf
-//				return resp
-//			}
-//		}
-//		size, err := strconv.Atoi(string(p))
-//		if err != nil || size < 0 {
-//			return nil
-//		}
-//		if offset+size >= c.recvBuf.Len() {
-//			break
-//		}
-//
-//		v := buf[offset : offset+size]
-//		resp = append(resp, string(v))
-//		offset += size + 1
-//	}
-//	//fmt.Printf("buf.size: %d packet not ready...\n", len(buf))
-//	return []string{}
-//}
-
-//success if error==nil
+//success if nil error
 func (c *Client) parse(data []byte) ([]string, error) {
 	contentList := strings.Split(strings.TrimRight(string(data), "\n\n"), "\n")
 	size := len(contentList)
@@ -182,6 +116,31 @@ func (c *Client) parse(data []byte) ([]string, error) {
 		}
 	}
 	return reply, nil
+}
+
+//:dbsize
+func (c *Client) DBsize() (int64, error) {
+	result, err := c.Do("dbsize")
+	if err != nil {
+		return 0, err
+	}
+	return strconv.ParseInt(result[0], 10, 64)
+}
+
+//:flushdb
+func (c *Client) Flushdb() error {
+	_, err := c.Do("flushdb")
+	return err
+}
+
+//:keys List keys in range (key_start, key_end].("", ""] means no range limit.
+//false on error, otherwise an array containing the keys.
+func (c *Client) Keys() ([]string, error) {
+	result, err := c.Do("keys")
+	if err != nil {
+		return []string{}, err
+	}
+	return result, err
 }
 
 // Close The Client Connection
