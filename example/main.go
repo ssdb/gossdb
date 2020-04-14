@@ -13,15 +13,24 @@ func main() {
 	}
 	defer db.Close()
 	//hash(db)
-	zset(db)
+	Db(db)
+	kv(db)
+}
+func Db(ssdb *gossdb.Client) {
+	keys, err := ssdb.Keys(-1)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(keys)
 }
 
 //k-v example
 func kv(ssdb *gossdb.Client) {
-	v, err := ssdb.Hincr("a", "b", 100)
+	err := ssdb.Set("a", "bbb")
 	if err != nil {
 		panic(err)
 	}
+	v, err := ssdb.Get("b417eb0f1c79e606d72c000762bdd6b7")
 	fmt.Println("ssdb.Hincr = ", v)
 
 }

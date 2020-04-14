@@ -135,8 +135,9 @@ func (c *Client) Flushdb() error {
 
 //:keys List keys in range (key_start, key_end].("", ""] means no range limit.
 //false on error, otherwise an array containing the keys.
-func (c *Client) Keys() ([]string, error) {
-	result, err := c.Do("keys")
+//limit -1 is not limit
+func (c *Client) Keys(limit int64) ([]string, error) {
+	result, err := c.Do("keys", "", "", limit)
 	if err != nil {
 		return []string{}, err
 	}
