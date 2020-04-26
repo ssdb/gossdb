@@ -1,6 +1,8 @@
 package gossdb
 
-import "strconv"
+import (
+	"strconv"
+)
 
 //:set Set the value of the key.
 //false on error, other values indicate OK.

@@ -7,25 +7,32 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
 const (
 	CODE_SUCCESS = "2"
 	INFO_SUCCESS = "ok"
+
+	Status_Default      int32 = iota
+	Status_Networkclose       //网络断开
 )
 
 type Client struct {
-	conn    net.Conn
-	recvBuf bytes.Buffer
+	conn     net.Conn
+	recvBuf  bytes.Buffer
+	tryCount int8 //断线重连尝试次数
+	option   Options
+	//lock sync.Mutex
+	cond   *sync.Cond
+	status int32
 }
 
-func Connect(addr string) (*Client, error) {
-	conn, err := net.DialTimeout("tcp", addr, 3*time.Second)
-	if err != nil {
-		return nil, err
-	}
-	return &Client{conn: conn}, nil
+func NewClient(opt Options) (*Client, error) {
+	conn, err := net.DialTimeout("tcp", opt.Addr, opt.DialTimeout)
+	return &Client{conn: conn, option: opt, cond: sync.NewCond(new(sync.Mutex))}, err
 }
 
 func (c *Client) Do(args ...interface{}) ([]string, error) {
@@ -77,7 +84,36 @@ func (c *Client) send(args ...interface{}) error {
 		buf.WriteByte('\n')
 	}
 	buf.WriteByte('\n')
+
+	if atomic.LoadInt32(&c.status) == Status_Networkclose {
+		c.cond.L.Lock()
+		c.cond.Wait()
+		c.cond.L.Unlock()
+	}
+
 	_, err := c.conn.Write(buf.Bytes())
+	//可能是网络断开
+	if err != nil {
+		atomic.AddInt32(&c.status, Status_Networkclose)
+		//atomic.LoadInt32()
+		c.conn.Close()
+		//断线重连机制
+		for {
+			c.tryCount++
+			fmt.Println("ssdb reconnect times=", c.tryCount, " time:", time.Now().String(), " at gossdb/ssdb.go:89")
+			c.conn, err = net.DialTimeout("tcp", c.option.Addr, time.Millisecond*50)
+			if err != nil && c.tryCount <= c.option.ReconnectCount {
+				time.Sleep(c.option.ReconnectDuration)
+				continue
+			}
+			atomic.AddInt32(&c.status, -Status_Networkclose)
+			c.tryCount = 0
+			c.cond.Broadcast()
+			//重新发送一次
+			_, err = c.conn.Write(buf.Bytes())
+			break
+		}
+	}
 	return err
 }
 
