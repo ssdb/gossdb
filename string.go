@@ -1,6 +1,9 @@
 package gossdb
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 //:set Set the value of the key.
 //false on error, other values indicate OK.
@@ -36,6 +39,7 @@ func (c *Client) Get(key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(result)
 	return result[0], nil
 }
 

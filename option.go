@@ -38,4 +38,9 @@ type Options struct {
 	// dial ssdb server time out duration
 	// default is 3 seconds
 	DialTimeout time.Duration
+	// Network error try reconnect count
+	//default is 3 time
+	ReconnectCount int8
+	// Network error try reconnect duration
+	ReconnectDuration time.Duration
 }

@@ -4,16 +4,30 @@ import (
 	"fmt"
 	"github.com/Quantumoffices/gossdb"
 	"strconv"
+	"time"
 )
 
 func main() {
-	db, err := gossdb.Connect("116.62.245.150:6389")
+	db, err := gossdb.NewClient(gossdb.Options{
+		Addr:              "192.168.0.220:6389",
+		OnConnect:         nil,
+		ReadTimeout:       0,
+		WriteTimeout:      0,
+		PoolSize:          0,
+		MinIdleConns:      0,
+		MaxConnAge:        0,
+		PoolTimeout:       0,
+		IdleTimeout:       0,
+		DialTimeout:       time.Second * 3,
+		ReconnectCount:    15,
+		ReconnectDuration: time.Second * 5,
+	})
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 	//hash(db)
-	Db(db)
+	//Db(db)
 	kv(db)
 }
 func Db(ssdb *gossdb.Client) {
@@ -26,13 +40,23 @@ func Db(ssdb *gossdb.Client) {
 
 //k-v example
 func kv(ssdb *gossdb.Client) {
-	err := ssdb.Set("a", "bbb")
-	if err != nil {
-		panic(err)
+	for {
+		time.Sleep(time.Second)
+		go func() {
+			//err := ssdb.Set("a", "bbb")
+			//if err != nil {
+			//	panic(err)
+			//}
+			v, err := ssdb.Get("a")
+			if err != nil {
+				fmt.Println(err)
+			}
+			if v == "1" {
+				fmt.Println()
+			}
+			fmt.Println("ssdb.a =", v)
+		}()
 	}
-	v, err := ssdb.Get("b417eb0f1c79e606d72c000762bdd6b7")
-	fmt.Println("ssdb.Hincr = ", v)
-
 }
 
 //hash example
