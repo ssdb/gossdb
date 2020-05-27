@@ -178,6 +178,20 @@ func (c *Client) Keys(limit int64) ([]string, error) {
 		return []string{}, err
 	}
 	return result, err
+} //:keys List keys in range (key_start, key_end].("", ""] means no range limit.
+
+//Verify if the specified key exists.
+//If the key exists, return true, otherwise return false.
+func (c *Client) Exists(key string) (bool, error) {
+	result, err := c.Do("exists", key)
+	if err != nil {
+		return false, err
+	}
+	exist := false
+	if result[0] == "1" {
+		exist = true
+	}
+	return exist, err
 }
 
 // Close The Client Connection

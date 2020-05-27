@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/Quantumoffices/gossdb"
+	"reflect"
 	"strconv"
 	"time"
 )
@@ -18,9 +19,9 @@ func main() {
 		MaxConnAge:        0,
 		PoolTimeout:       0,
 		IdleTimeout:       0,
-		DialTimeout:       0,
-		ReconnectCount:    15,
-		ReconnectDuration: time.Second * 5,
+		DialTimeout:       time.Second,
+		ReconnectCount:    10,
+		ReconnectDuration: time.Second,
 	})
 	if err != nil {
 		panic(err)
@@ -40,6 +41,8 @@ func Db(ssdb *gossdb.Client) {
 
 //k-v example
 func kv(ssdb *gossdb.Client) {
+	b, e := ssdb.Exists("aaaaa")
+	fmt.Println(b, e)
 	for {
 		time.Sleep(time.Second)
 		go func() {
@@ -62,6 +65,19 @@ func kv(ssdb *gossdb.Client) {
 //hash example
 func hash(ssdb *gossdb.Client) {
 	key := "a"
+
+	hget, err2 := ssdb.Hget(key, "d")
+	if err2 != nil {
+		fmt.Println(fmt.Sprintf("%+v", err2))
+		fmt.Println(reflect.ValueOf(err2).Type())
+		fmt.Println(fmt.Sprintf("%+v", gossdb.Error_Not_Found))
+		fmt.Println(reflect.ValueOf(gossdb.Error_Not_Found).Type())
+
+		if gossdb.Error_Not_Found == gossdb.Error_Not_Found {
+			panic(err2)
+		}
+	}
+	fmt.Println(hget)
 	v1, err := ssdb.Hincr(key, "b", -100)
 	if err != nil {
 		panic(err)
