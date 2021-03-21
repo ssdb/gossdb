@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/ssdb/gossdb/ssdb"
 	"os"
 	"strconv"
-	"./ssdb"
 )
 
 func main() {
@@ -19,10 +19,10 @@ func main() {
 	var val interface{}
 
 	keys := []string{}
-	keys = append(keys, "c");
-	keys = append(keys, "d");
-	val, err = db.Do("multi_get", "a", "b", keys);
-	fmt.Printf("%s\n", val);
+	keys = append(keys, "c")
+	keys = append(keys, "d")
+	val, err = db.Do("multi_get", "a", "b", keys)
+	fmt.Printf("%s\n", val)
 
 	db.Set("a", "xxx")
 	val, err = db.Get("a")
@@ -31,7 +31,7 @@ func main() {
 	val, err = db.Get("a")
 	fmt.Printf("%s\n", val)
 
-	fmt.Printf("----\n");
+	fmt.Printf("----\n")
 
 	db.Do("zset", "z", "a", 3)
 	db.Do("multi_zset", "z", "b", -2, "c", 5, "d", 3)
@@ -50,11 +50,11 @@ func main() {
 	}
 
 	//_ = db.Send("dump", "", "", "-1");
-	_ = db.Send("sync140");
+	_ = db.Send("sync140")
 	// receive multi responses on one request
-	for{
+	for {
 		resp, _ := db.Recv()
-		fmt.Printf("%s\n", strconv.Quote(fmt.Sprintf("%s", resp)));
+		fmt.Printf("%s\n", strconv.Quote(fmt.Sprintf("%s", resp)))
 	}
 
 	return

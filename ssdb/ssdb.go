@@ -75,7 +75,7 @@ func (c *Client) Del(key string) (interface{}, error) {
 }
 
 func (c *Client) Send(args ...interface{}) error {
-	return c.send(args);
+	return c.send(args)
 }
 
 func (c *Client) send(args []interface{}) error {
@@ -123,7 +123,7 @@ func (c *Client) send(args []interface{}) error {
 }
 
 func (c *Client) Recv() ([]string, error) {
-	return c.recv();
+	return c.recv()
 }
 
 func (c *Client) recv() ([]string, error) {
