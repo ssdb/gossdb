@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-/*
 //Set 设置指定 key 的值内容
 //
 //  key 键值
@@ -29,7 +28,7 @@ func (c *Client) Set(key string, val interface{}, ttl ...int64) (err error) {
 	}
 	return makeError(resp, key)
 }
-*/
+
 //SetNX 当 key 不存在时, 设置指定 key 的值内容. 如果已存在, 则不设置.
 //
 //  key 键值
@@ -48,7 +47,6 @@ func (c *Client) SetNX(key string, val interface{}) (Value, error) {
 	return "", makeError(resp, key)
 }
 
-/*
 //Get 获取指定 key 的值内容
 //
 //  key 键值
@@ -64,7 +62,7 @@ func (c *Client) Get(key string) (Value, error) {
 	}
 	return "", makeError(resp, key)
 }
-*/
+
 //GetSet 更新 key 对应的 value, 并返回更新前的旧的 value.
 //
 //  key 键值
@@ -116,7 +114,6 @@ func (c *Client) Exists(key string) (re bool, err error) {
 	return false, makeError(resp, key)
 }
 
-/*
 //Del 删除指定 key
 //
 //  key 要删除的 key
@@ -133,7 +130,7 @@ func (c *Client) Del(key string) error {
 	}
 	return makeError(resp, key)
 }
-*/
+
 //TTL 返回 key(只针对 KV 类型) 的存活时间.
 //
 //  key 要删除的 key

@@ -35,6 +35,7 @@ func (c *Client) Do(args ...interface{}) ([]string, error) {
 	return resp, err
 }
 
+/*
 func (c *Client) Set(key string, val string) (interface{}, error) {
 	resp, err := c.Do("set", key, val)
 	if err != nil {
@@ -73,7 +74,7 @@ func (c *Client) Del(key string) (interface{}, error) {
 	}
 	return nil, fmt.Errorf("bad response:resp:%v:", resp)
 }
-
+*/
 func (c *Client) Send(args ...interface{}) error {
 	return c.send(args)
 }
